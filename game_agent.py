@@ -3,7 +3,9 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
-
+import math
+import copy
+# import pdb
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -165,7 +167,8 @@ class MinimaxPlayer(IsolationPlayer):
             return self.minimax(game, self.search_depth)
 
         except SearchTimeout:
-            pass  # Handle any actions required after timeout as needed
+            # Handle any actions required after timeout as needed
+            best_move = game.get_legal_moves()[0]
 
         # Return the best move from the last completed search iteration
         return best_move
@@ -209,11 +212,83 @@ class MinimaxPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
+        # print(type(self.time_left()))
+
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+
+        if depth == 0:
+            return (-1,-1)
+
+        children = game.get_legal_moves()
+        
+        if len(children) == 0:
+            return (-1,-1)
+
+        max_score = -math.inf
+        best_move = None
+
+        for child in children:
+            child_game = game.forecast_move(child)
+            score = self.min_value(child_game, depth-1)
+            if score > max_score:
+                max_score = score
+                best_move = child
+
+        if best_move is not None:
+            return best_move
+        else:
+            return (-1, -1)
+
+          
+    def max_value(self, game, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        
+        if depth == 0:
+            return self.score(game, game.active_player)
+
+        children = game.get_legal_moves()
+        # print(children)
+
+        if len(children) == 0:
+            return self.score(game, game.active_player)
+
+        max_score = -math.inf
+
+        for child in children:
+            child_game = game.forecast_move(child)
+            score = self.min_value(child_game, depth - 1)
+            if score > max_score:
+                max_score = score
+
+        return max_score
+        
+    def min_value(self, game, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        if depth == 0:
+            return self.score(game, game.active_player)
+
+        children = game.get_legal_moves()
+        # print(children)
+
+        if len(children) == 0:
+            return self.score(game, game.active_player)
+
+        min_score = math.inf
+
+        for child in children:
+            child_game = game.forecast_move(child)
+            score = self.max_value(child_game, depth - 1)
+            if score < min_score:
+                min_score = score
+
+        return min_score
+        
 
 
 class AlphaBetaPlayer(IsolationPlayer):
@@ -255,7 +330,22 @@ class AlphaBetaPlayer(IsolationPlayer):
         self.time_left = time_left
 
         # TODO: finish this function!
-        raise NotImplementedError
+        best_move = (-1, -1)
+
+        try:
+            # The try/except block will automatically catch the exception
+            # raised when the timer is about to expire.
+            return self.alphabeta(game, self.search_depth)
+
+        except SearchTimeout:
+            # Handle any actions required after timeout as needed
+            best_move = game.get_legal_moves()[0]
+
+        # Return the best move from the last completed search iteration
+        return best_move
+
+
+        # raise NotImplementedError
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -306,4 +396,88 @@ class AlphaBetaPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+
+        if depth == 0:
+            return (-1,-1)
+
+        children = game.get_legal_moves()
+
+        if len(children) == 0:
+            return (-1,-1)
+
+        max_score = -math.inf
+        alpha_value = -math.inf
+        beta_value = math.inf
+        best_move = None
+
+        for child in children:
+            child_game = game.forecast_move(child)
+            score = self.min_value(child_game, alpha_value, beta_value, depth - 1)
+            if score > max_score:
+                max_score = score
+                best_move = child
+
+        if best_move is not None:
+            return best_move
+        else:
+            return (-1, -1)
+
+
+        # raise NotImplementedError
+    def max_value(self,game,alpha,beta,depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        
+        if depth == 0:
+            return self.score(game, game.active_player)
+
+        children = game.get_legal_moves()
+
+        if len(children) == 0:
+            return self.score(game, game.active_player)
+
+        max_score = -math.inf
+        alpha_value = alpha
+        beta_value = beta
+
+        for child in children:
+            child_game = game.forecast_move(child)
+            score = self.min_value(child_game, alpha_value, beta_value, depth - 1)
+            if score > max_score:
+                max_score = score
+            if score >= beta_value:
+                return max_score
+            if score > alpha_value:
+                alpha_value = score
+
+        return max_score
+
+
+    def min_value(self,game,alpha,beta,depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        if depth == 0:
+            return self.score(game, game.active_player)
+
+        children = game.get_legal_moves()
+        
+
+        if len(children) == 0:
+            return self.score(game, game.active_player)
+
+        min_score = math.inf
+        alpha_value = alpha
+        beta_value = beta
+
+        for child in children:
+            child_game = game.forecast_move(child)
+            score = self.max_value(child_game, alpha_value, beta_value, depth - 1)
+            if score < min_score:
+                min_score = score
+            if score <= alpha_value:
+                return min_score
+            if score < beta_value:
+                beta_value = score
+
+        return min_score
