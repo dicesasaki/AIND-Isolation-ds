@@ -248,13 +248,13 @@ class MinimaxPlayer(IsolationPlayer):
             raise SearchTimeout()
         
         if depth == 0:
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
         children = game.get_legal_moves()
         # print(children)
 
         if len(children) == 0:
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
         max_score = -math.inf
 
@@ -271,13 +271,13 @@ class MinimaxPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         if depth == 0:
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
         children = game.get_legal_moves()
         # print(children)
 
         if len(children) == 0:
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
         min_score = math.inf
 
@@ -331,11 +331,17 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # TODO: finish this function!
         best_move = (-1, -1)
+        i = 0
 
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            return self.alphabeta(game, self.search_depth)
+            # return self.alphabeta(game, self.search_depth)
+            while True:
+                best_move = self.alphabeta(game, i) 
+                if best_move != (-1,-1):
+                    return best_move
+                i = i + 1
 
         except SearchTimeout:
             # Handle any actions required after timeout as needed
@@ -410,12 +416,17 @@ class AlphaBetaPlayer(IsolationPlayer):
         beta_value = math.inf
         best_move = None
 
+        # score = self.max_value(game, alpha_value, beta_value, depth)
         for child in children:
             child_game = game.forecast_move(child)
             score = self.min_value(child_game, alpha_value, beta_value, depth - 1)
             if score > max_score:
                 max_score = score
                 best_move = child
+            if score >= beta_value:
+                return best_move
+            if score > alpha_value:
+                alpha_value = score
 
         if best_move is not None:
             return best_move
@@ -429,12 +440,12 @@ class AlphaBetaPlayer(IsolationPlayer):
             raise SearchTimeout()
         
         if depth == 0:
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
         children = game.get_legal_moves()
 
         if len(children) == 0:
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
         max_score = -math.inf
         alpha_value = alpha
@@ -458,13 +469,13 @@ class AlphaBetaPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         if depth == 0:
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
         children = game.get_legal_moves()
         
 
         if len(children) == 0:
-            return self.score(game, game.active_player)
+            return self.score(game, self)
 
         min_score = math.inf
         alpha_value = alpha
