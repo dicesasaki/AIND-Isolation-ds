@@ -37,7 +37,20 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    # raise NotImplementedError
+
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    w, h = game.width / 2., game.height / 2.
+    y, x = game.get_player_location(player)
+
+    return float(own_moves - opp_moves) - float((h - y)**2 + (w - x)**2)
 
 
 def custom_score_2(game, player):
@@ -63,7 +76,24 @@ def custom_score_2(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    score = 0
+
+    y, x = game.get_player_location(player)
+
+    if x > 1 and y > 1 and x < game.width - 2 and y < game.width - 2:
+        score = 2
+
+    return float(own_moves - opp_moves + score)
+    # return -float(len(game.get_legal_moves(game.get_opponent(player))))
 
 
 def custom_score_3(game, player):
@@ -89,7 +119,17 @@ def custom_score_3(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    w, h = game.width / 2., game.height / 2.
+    y, x = game.get_player_location(player)
+
+    return -float((h - y)**2 + (w - x)**2)
+
 
 
 class IsolationPlayer:
@@ -339,13 +379,14 @@ class AlphaBetaPlayer(IsolationPlayer):
             # return self.alphabeta(game, self.search_depth)
             while True:
                 best_move = self.alphabeta(game, i) 
-                if best_move != (-1,-1):
-                    return best_move
+                # if best_move != (-1,-1):
+                #     return best_move
                 i = i + 1
 
         except SearchTimeout:
             # Handle any actions required after timeout as needed
-            best_move = game.get_legal_moves()[0]
+            # best_move = game.get_legal_moves()[0]
+            best_move = best_move
 
         # Return the best move from the last completed search iteration
         return best_move
